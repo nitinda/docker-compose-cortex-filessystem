@@ -1,0 +1,78 @@
+# Comma-separated list of Cortex modules to load. The alias 'all' can be used in
+# the list to load a number of core modules and will enable single-binary mode.
+# Use '-modules' command line flag to get a list of available modules, and to
+# see which modules are included in 'all'.
+# CLI flag: -target
+target: "purger"
+
+# Disable the requirement that every request to Cortex has a
+# X-Scope-OrgID header. `fake` will be substituted in instead.
+auth_enabled: false
+
+# The server_config configures the HTTP and gRPC server of the launched
+# service(s).
+server:  
+  # HTTP server listen port.
+  # CLI flag: -server.http-listen-port
+  http_listen_port: 9009
+
+  # Only log messages with the given severity or above. Valid levels: [debug, info, warn, error]
+  # CLI flag: -log.level
+  log_level: "error"
+
+  # Output log messages in the given format. Valid formats: [logfmt, json]
+  # CLI flag: -log.format
+  log_format: "json"
+
+  # Configure the server to allow messages up to 100MB.
+  grpc_server_max_recv_msg_size: 104857600
+  grpc_server_max_send_msg_size: 104857600
+  grpc_server_max_concurrent_streams: 1000
+
+# The storage_config configures where Cortex stores the data (chunks storage engine).
+storage:
+  engine: blocks
+
+# This configures how the querier and store-gateway discover and synchronize
+# blocks stored in the bucket.
+blocks_storage:
+  tsdb:
+    # Local directory to store TSDBs in the ingesters.
+    # CLI flag: -blocks-storage.tsdb.dir
+    dir: /data/cortex/tsdb
+  
+    # Enables support for exemplars in TSDB and sets the maximum number that will
+    # be stored. 0 or less means disabled.
+    # CLI flag: -blocks-storage.tsdb.max-exemplars
+    max_exemplars: 20
+
+  # Directory to store synchronized TSDB index headers.
+  # CLI flag: -blocks-storage.bucket-store.sync-dir
+  bucket_store:
+    sync_dir: /data/cortex/tsdb-sync
+
+  # # You can choose between local storage and Amazon S3, Google GCS and Azure storage. Each option requires additional configuration
+  # # as shown below. All options can be configured via flags as well which might be handy for secret inputs.
+  backend: filesystem # s3, gcs, azure or filesystem are valid options
+  filesystem:
+    dir: /data/cortex/tsdb
+
+compactor:
+  data_dir: /data/cortex/compactor
+  sharding_ring:
+    kvstore:
+      store: inmemory
+
+frontend_worker:
+  match_max_concurrent: true
+
+# The purger_config configures the purger which takes care of delete requests.
+purger:
+  # Enable purger to allow deletion of series. Be aware that Delete series feature
+  # is still experimental
+  # CLI flag: -purger.enable
+  enable: true
+
+  # Number of workers executing delete plans in parallel
+  # CLI flag: -purger.num-workers
+  num_workers: 2

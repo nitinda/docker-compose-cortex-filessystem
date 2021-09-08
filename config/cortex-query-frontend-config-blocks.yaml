@@ -1,0 +1,75 @@
+# Configuration for running Cortex in single-process mode.
+# This should not be used in production.  It is only for getting started
+# and development.
+
+# Comma-separated list of Cortex modules to load. The alias 'all' can be used in
+# the list to load a number of core modules and will enable single-binary mode.
+# Use '-modules' command line flag to get a list of available modules, and to
+# see which modules are included in 'all'.
+# CLI flag: -target
+target: "query-frontend"
+
+# Disable the requirement that every request to Cortex has a
+# X-Scope-OrgID header. `fake` will be substituted in instead.
+auth_enabled: false
+
+# The server_config configures the HTTP and gRPC server of the launched
+# service(s).
+server:  
+  # HTTP server listen port.
+  # CLI flag: -server.http-listen-port
+  http_listen_port: 9009
+
+  # Only log messages with the given severity or above. Valid levels: [debug, info, warn, error]
+  # CLI flag: -log.level
+  log_level: "error"
+
+  # Output log messages in the given format. Valid formats: [logfmt, json]
+  # CLI flag: -log.format
+  log_format: "json"
+
+  # Configure the server to allow messages up to 100MB.
+  grpc_server_max_recv_msg_size: 104857600
+  grpc_server_max_send_msg_size: 104857600
+  grpc_server_max_concurrent_streams: 1000
+
+# HTTP path prefix for Cortex API.
+# CLI flag: -http.prefix
+http_prefix: "/api/prom"
+
+# api:
+#   # HTTP URL path under which the Prometheus api will be served.
+#   # CLI flag: -http.prometheus-http-prefix
+#   prometheus_http_prefix: "/prometheus"
+
+# # # The frontend_worker_config configures the worker - running within the Cortex
+# # # querier - picking up and executing queries enqueued by the query-frontend or
+# # # query-scheduler.
+# # frontend_worker:
+# #   # Address of query frontend service, in host:port format. If
+# #   # -querier.scheduler-address is set as well, querier will use scheduler instead.
+# #   # Only one of -querier.frontend-address or -querier.scheduler-address can be
+# #   # set. If neither is set, queries are only received via HTTP endpoint.
+# #   # CLI flag: -querier.frontend-address
+# #   frontend_address: "192.168.56.101:8083"
+# #   match_max_concurrent: true
+
+# The query_frontend_config configures the Cortex query-frontend.
+frontend:
+  # Log queries that are slower than the specified duration. Set to 0 to disable.
+  # Set to < 0 to enable on all queries.
+  # CLI flag: -frontend.log-queries-longer-than
+  log_queries_longer_than: 2s
+
+  # True to enable query statistics tracking. When enabled, a message with some
+  # statistics is logged for every query.
+  # CLI flag: -frontend.query-stats-enabled
+  query_stats_enabled: true
+
+  # URL of downstream Prometheus.
+  # CLI flag: -frontend.downstream-url
+  downstream_url: http://192.168.56.101:9020/
+
+# The query_range_config configures the query splitting and caching in the
+# Cortex query-frontend.
+# query_range: <query_range_config>

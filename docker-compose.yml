@@ -1,0 +1,120 @@
+version: '3.7'
+
+services:
+  
+  cortex-query-frontend-1:
+    image: quay.io/cortexproject/cortex:v1.10.0
+    container_name: cortex-query-frontend-1
+    restart: always
+    volumes:
+     - ./config/cortex-query-frontend-config-blocks.yaml:/etc/cortex-query-frontend-config-blocks.yaml
+    networks:
+      - cortex
+    ports:
+      - "9010:9009"
+    command:
+      - --config.file=/etc/cortex-query-frontend-config-blocks.yaml
+
+  cortex-querier-1:
+    image: quay.io/cortexproject/cortex:v1.10.0
+    container_name: cortex-querier-1
+    restart: always
+    volumes:
+     - ./config/cortex-querier-config-blocks.yaml:/etc/cortex-querier-config-blocks.yaml
+    networks:
+      - cortex
+    ports:
+      - "9020:9009"
+    command:
+      - --config.file=/etc/cortex-querier-config-blocks.yaml
+
+  cortex-distributor-1:
+    image: quay.io/cortexproject/cortex:v1.10.0
+    container_name: cortex-distributor-1
+    restart: always
+    volumes:
+     - ./config/cortex-distributor-config-blocks.yaml:/etc/cortex-distributor-config-blocks.yaml
+    networks:
+      - cortex
+    ports:
+      - "9030:9009"
+    command:
+      - --config.file=/etc/cortex-distributor-config-blocks.yaml
+
+  cortex-ingester-1:
+    image: quay.io/cortexproject/cortex:v1.10.0
+    container_name: cortex-ingester-1
+    restart: always
+    volumes:
+     - ./config/cortex-ingester-config-blocks.yaml:/etc/cortex-ingester-config-blocks.yaml
+     - /data/cortex/tsdb:/data/cortex/tsdb
+     - /data/cortex/tsdb-sync:/data/cortex/tsdb-sync
+     - /data/cortex/compactor:/data/cortex/compactor
+     - /data/cortex/rules:/data/cortex/rules
+    networks:
+      - cortex
+    ports:
+      - "9040:9009"
+    command:
+      - --config.file=/etc/cortex-ingester-config-blocks.yaml
+
+  cortex-ingester-2:
+    image: quay.io/cortexproject/cortex:v1.10.0
+    container_name: cortex-ingester-2
+    restart: always
+    volumes:
+     - ./config/cortex-ingester-config-blocks.yaml:/etc/cortex-ingester-config-blocks.yaml
+     - /data/cortex/tsdb:/data/cortex/tsdb
+     - /data/cortex/tsdb-sync:/data/cortex/tsdb-sync
+     - /data/cortex/compactor:/data/cortex/compactor
+     - /data/cortex/rules:/data/cortex/rules
+    networks:
+      - cortex
+    ports:
+      - "9041:9009"
+    command:
+      - --config.file=/etc/cortex-ingester-config-blocks.yaml
+
+  cortex-purger-1:
+    image: quay.io/cortexproject/cortex:v1.10.0
+    container_name: cortex-purger-1
+    restart: always
+    volumes:
+     - ./config/cortex-purger-config-blocks.yaml:/etc/cortex-purger-config-blocks.yaml
+    networks:
+      - cortex
+    ports:
+      - "9050:9009"
+    command:
+      - --config.file=/etc/cortex-purger-config-blocks.yaml
+
+
+  cortex-compactor-1:
+    image: quay.io/cortexproject/cortex:v1.10.0
+    container_name: cortex-compactor-1
+    restart: always
+    volumes:
+     - ./config/cortex-compactor-config-blocks.yaml:/etc/cortex-compactor-config-blocks.yaml
+    networks:
+      - cortex
+    ports:
+      - "9060:9009"
+    command:
+      - --config.file=/etc/cortex-compactor-config-blocks.yaml
+
+  cortex-store-gateway-1:
+    image: quay.io/cortexproject/cortex:v1.10.0
+    container_name: cortex-store-gateway-1
+    restart: always
+    volumes:
+     - ./config/cortex-store-gateway-config-blocks.yaml:/etc/cortex-store-gateway-config-blocks.yaml
+    networks:
+      - cortex
+    ports:
+      - "9070:9009"
+    command:
+      - --config.file=/etc/cortex-store-gateway-config-blocks.yaml
+
+networks:
+  cortex:
+    driver: bridge

@@ -1,0 +1,115 @@
+# Configuration for running Cortex in single-process mode.
+# This should not be used in production.  It is only for getting started
+# and development.
+
+# Comma-separated list of Cortex modules to load. The alias 'all' can be used in
+# the list to load a number of core modules and will enable single-binary mode.
+# Use '-modules' command line flag to get a list of available modules, and to
+# see which modules are included in 'all'.
+# CLI flag: -target
+target: "ingester"
+
+# Disable the requirement that every request to Cortex has a
+# X-Scope-OrgID header. `fake` will be substituted in instead.
+auth_enabled: false
+
+# The server_config configures the HTTP and gRPC server of the launched
+# service(s).
+server:  
+  # HTTP server listen port.
+  # CLI flag: -server.http-listen-port
+  http_listen_port: 9009
+
+  # Only log messages with the given severity or above. Valid levels: [debug, info, warn, error]
+  # CLI flag: -log.level
+  log_level: "error"
+
+  # Output log messages in the given format. Valid formats: [logfmt, json]
+  # CLI flag: -log.format
+  log_format: "json"
+
+  # Configure the server to allow messages up to 100MB.
+  grpc_server_max_recv_msg_size: 104857600
+  grpc_server_max_send_msg_size: 104857600
+  grpc_server_max_concurrent_streams: 1000
+
+
+# The ingester_client_config configures how the Cortex distributors connect to the ingesters.
+ingester_client:
+  grpc_client_config:
+    # Configure the client to allow messages up to 100MB.
+    max_recv_msg_size: 104857600
+    max_send_msg_size: 104857600
+    grpc_compression: gzip
+
+# The ingester_config configures the Cortex ingester.
+ingester:
+  
+  # Configures the Write-Ahead Log (WAL) for the Cortex chunks storage. This
+  # config is ignored when running the Cortex blocks storage.
+  walconfig:
+    # Enable writing of ingested data into WAL.
+    # CLI flag: -ingester.wal-enabled
+    wal_enabled: false
+  
+  lifecycler:
+    # The address to advertise for this ingester.  Will be autodiscovered by
+    # looking up address on eth0 or en0; can be specified if this fails.
+    # address: 127.0.0.1
+
+    # We want to start immediately and flush on shutdown.
+    join_after: 5s
+    min_ready_duration: 0s
+    final_sleep: 0s
+    num_tokens: 512
+
+    # Use an in memory ring store, so we don't need to launch a Consul.
+    ring:
+      kvstore:
+        store: consul
+        # The consul_config configures the consul client.
+        
+        # The prefix for the keys in the store. Should end with a /.
+        # CLI flag: -ring.prefix
+        prefix: "collectors/ingester/"
+
+        consul:
+          # Hostname and port of Consul.
+          # CLI flag: -<prefix>.consul.hostname
+          host: 192.168.56.101:8500
+      # The number of ingesters to write to and read from.
+      # CLI flag: -distributor.replication-factor
+      replication_factor: 2
+
+      # True to enable the zone-awareness and replicate ingested samples across
+      # different availability zones.
+      # CLI flag: -distributor.zone-awareness-enabled
+      zone_awareness_enabled: true
+
+# The storage_config configures where Cortex stores the data (chunks storage engine).
+storage:
+  engine: blocks
+
+# This configures how the querier and store-gateway discover and synchronize
+# blocks stored in the bucket.
+blocks_storage:
+  tsdb:
+    # Local directory to store TSDBs in the ingesters.
+    # CLI flag: -blocks-storage.tsdb.dir
+    dir: /data/cortex/tsdb
+  
+    # Enables support for exemplars in TSDB and sets the maximum number that will
+    # be stored. 0 or less means disabled.
+    # CLI flag: -blocks-storage.tsdb.max-exemplars
+    max_exemplars: 20
+
+  # Directory to store synchronized TSDB index headers.
+  # CLI flag: -blocks-storage.bucket-store.sync-dir
+  bucket_store:
+    sync_dir: /data/cortex/tsdb-sync
+
+  # # You can choose between local storage and Amazon S3, Google GCS and Azure storage. Each option requires additional configuration
+  # # as shown below. All options can be configured via flags as well which might be handy for secret inputs.
+  backend: filesystem # s3, gcs, azure or filesystem are valid options
+  filesystem:
+    dir: /data/cortex/tsdb

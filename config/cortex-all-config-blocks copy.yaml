@@ -1,0 +1,43 @@
+# Comma-separated list of Cortex modules to load. The alias 'all' can be used in
+# the list to load a number of core modules and will enable single-binary mode.
+# Use '-modules' command line flag to get a list of available modules, and to
+# see which modules are included in 'all'.
+# CLI flag: -target
+target: "ruler"
+
+# Disable the requirement that every request to Cortex has a
+# X-Scope-OrgID header. `fake` will be substituted in instead.
+auth_enabled: false
+
+# The server_config configures the HTTP and gRPC server of the launched
+# service(s).
+server:  
+  # HTTP server listen port.
+  # CLI flag: -server.http-listen-port
+  http_listen_port: 9009
+
+  # Only log messages with the given severity or above. Valid levels: [debug, info, warn, error]
+  # CLI flag: -log.level
+  log_level: "debug"
+
+  # Output log messages in the given format. Valid formats: [logfmt, json]
+  # CLI flag: -log.format
+  log_format: "json"
+
+  # Configure the server to allow messages up to 100MB.
+  grpc_server_max_recv_msg_size: 104857600
+  grpc_server_max_send_msg_size: 104857600
+  grpc_server_max_concurrent_streams: 1000
+
+ruler:
+  enable_api: true
+  enable_sharding: false
+
+ruler_storage:
+  # Backend storage to use. Supported backends are: s3, gcs, azure, swift, filesystem, configdb, local.
+  # CLI flag: -ruler-storage.backend
+  backend: filesystem
+  filesystem:
+    # Directory to scan for rules
+    # CLI flag: -ruler-storage.local.directory
+    dir: /data/cortex/rules
